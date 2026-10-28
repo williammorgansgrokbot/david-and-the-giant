@@ -16,6 +16,7 @@ html,body{margin:0;height:100%;position:fixed;inset:0;overscroll-behavior:none;-
 .btn.big{font-size:28px;padding:10px 46px;border-radius:22px;animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.06)}}
 .btn.cream,.btn.blue,.btn.red{background:linear-gradient(#c98a4e 0%,#9a5a2a 45%,#7a4220 100%);color:#ffe9a8;text-shadow:0 2px 0 #3a1d08;border-color:#2e1606;box-shadow:inset 0 2px 0 rgba(255,220,160,.55),inset 0 0 0 2px rgba(255,200,90,.35),0 4px 0 #2e1606,0 6px 10px rgba(0,0,0,.45)}
+.btn.wood{background:linear-gradient(#c98a4e 0%,#9a5a2a 45%,#7a4220 100%);color:#ffd84a;text-shadow:0 2px 0 #3a1d08,0 0 6px rgba(255,190,60,.5);border:3px solid #e8b84a;box-shadow:inset 0 2px 0 rgba(255,220,160,.55),inset 0 0 0 2px rgba(255,200,90,.45),0 0 0 2px #2e1606,0 5px 0 #2e1606,0 8px 14px rgba(0,0,0,.5)}
 .btn .st{font-size:10px;color:#ffd34d;line-height:1;letter-spacing:1px;text-shadow:0 1px 0 #3a1d08}
 .btn.lock{background:linear-gradient(#8f8578,#655d53);color:#cfc6b8;text-shadow:none;border-color:#3a342e}
 .logo{font:900 min(calc(46px*var(--k)),5.6vw) "Trebuchet MS",Verdana,sans-serif;letter-spacing:1px;color:#ffd34d;background:linear-gradient(#fffbe0 10%,#ffd84a 45%,#f39a1c 80%,#c8620e);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
@@ -231,7 +232,7 @@ const IMG={};function loadAssets(){return Promise.all(Object.keys(ASSETS).map(k=
 addEventListener('load',()=>{loadAssets().then(()=>{const l=document.getElementById('load');if(l)l.remove();go(TitleScene);requestAnimationFrame(frame)})});
 // generic title builder
 function makeTitle(o){return()=>({name:'title',init(){Snd.music('title');const h=document.createElement('div');h.style.cssText='position:absolute;left:0;right:0;top:calc(var(--it) + '+(o.top||'9%')+');text-align:center;pointer-events:none';h.innerHTML='<div class="logo">'+o.title+'</div><div class="tag">'+o.tag+'</div>';UI.appendChild(h);const un=+(store.get(GAME_ID+'Unl')||0);
- btn('▶ PLAY','green big',{left:'50%',top:o.play||'58%',transform:'translateX(-50%)'},()=>go(LEVELS[0].intro||LEVELS[0].scene));
+ btn('▶ PLAY','wood big',{left:'50%',top:o.play||'58%',transform:'translateX(-50%)'},()=>go(LEVELS[0].intro||LEVELS[0].scene));
  const row=document.createElement('div');row.style.cssText='position:absolute;left:50%;bottom:calc(var(--ib) + 10px);transform:translateX(-50%);display:flex;gap:8px;pointer-events:none';UI.appendChild(row);
  LEVELS.forEach((L,i)=>{const ok=i<=un;const st=+(store.get(GAME_ID+'S'+i)||0);const b=btn((ok?(i+1):'🔒')+'<div class="st">'+(ok?'★'.repeat(st)+'☆'.repeat(3-st):'')+'</div>',ok?'cream':'lock',{position:'static',padding:'3px 12px',fontSize:'17px',minWidth:'50px',minHeight:'44px'},()=>{if(ok)go(L.scene)});b.title=L.name;row.appendChild(b)});
  if(G.auto)setTimeout(()=>go(LEVELS[0].intro||LEVELS[0].scene),900)},update(){},draw(){o.draw(this.t)}})}
@@ -385,7 +386,7 @@ const LEVELS=[
  {name:'The Sling',scene:SlingScene,ref:'1 Samuel 17:45',done:'David won!',verse:'Then said David to the Philistine, Thou comest to me with a sword, and with a spear, and with a shield: but I come to thee in the name of the LORD of hosts, the God of the armies of Israel, whom thou hast defied.',
   intro:()=>Story([pg('David ran toward the giant, trusting God.',t=>{D.bg('bg_valley',null,{dy:.25,zoom:1+t*.01});goliath(G.W-70,164,{h:130});davidSpr(40+(t*30)%60,164,52,{run:1,ph:t*12});D.vig(.4)})],SlingScene)}
 ];
-const TitleScene=makeTitle({title:'David &amp; the Giant',tag:'Watch • Carry • Choose • Trust',top:'5%',play:'60%',draw(t){D.bg('bg_title',null,{zoom:1+.02*Math.sin(t*.4),dy:.15});
+const TitleScene=makeTitle({title:'David &amp; the Giant',tag:'Watch • Carry • Choose • Trust',top:'5%',play:'44%',draw(t){D.bg('bg_title',null,{zoom:1+.02*Math.sin(t*.4),dy:.15});
  X.save();X.globalCompositeOperation='lighter';for(let i=0;i<12;i++){const x=(i*71+t*6)%G.W,y=G.H-((i*29+t*10)%G.H);X.globalAlpha=.25+.25*Math.sin(t*2+i);D.ell(x,y,1+(i%3)*.6,1+(i%3)*.6,'#ffe0a0',0)}X.restore();D.vig(.4)}});
 
 </script></body></html>
