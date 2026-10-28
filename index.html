@@ -204,10 +204,10 @@ function card(o){const inn=CARD.querySelector('.in');inn.innerHTML=(o.title?'<h2
  const row=inn.querySelector('.row');(o.btns||[]).forEach((b,i)=>{const e=btn(b.label,b.cls||'green',{},()=>{if(fading)return;b.fn()});row.appendChild(e)});
  cap('');CARD.classList.add('on');G.paused=true;Snd.play(o.sfx||'win');if(G.auto&&o.btns&&o.btns.length){const b=o.btns[o.btns.length-1];setTimeout(()=>{if(CARD.classList.contains('on'))b.fn()},1500)}}
 function hideCard(){CARD.classList.remove('on');G.paused=false}
-function levelDone(i,starsN){const L=LEVELS[i];const best=+(store.get(GAME_ID+'S'+i)||0);if(starsN>best)store.set(GAME_ID+'S'+i,starsN);
+function levelDone(i,starsN,dl){const L=LEVELS[i];const best=+(store.get(GAME_ID+'S'+i)||0);if(starsN>best)store.set(GAME_ID+'S'+i,starsN);
  const un=+(store.get(GAME_ID+'Unl')||0);if(i+1>un)store.set(GAME_ID+'Unl',i+1);
  const nxt=i+1<LEVELS.length?()=>go(LEVELS[i+1].intro||LEVELS[i+1].scene):()=>go(FinaleScene);
- setTimeout(()=>card({title:L.done||('Level '+(i+1)+' complete!'),stars:starsN,verse:L.verse,ref:L.ref,btns:[{label:'↻ Again',cls:'cream',fn:()=>go(L.scene)},{label:i+1<LEVELS.length?'Next ▶':'Finale ▶',cls:'green',fn:nxt}]}),600)}
+ setTimeout(()=>card({title:L.done||('Level '+(i+1)+' complete!'),stars:starsN,verse:L.verse,ref:L.ref,btns:[{label:'↻ Again',cls:'cream',fn:()=>go(L.scene)},{label:i+1<LEVELS.length?'Next ▶':'Finale ▶',cls:'green',fn:nxt}]}),dl==null?2200:dl)}
 // story cutscene: pages of {draw(t), text}
 function Story(pages,next){let i=0,pt=0;const s={name:'story',init(){cap(pages[0].text,'tap to continue')},update(dt){pt+=dt;if(G.auto&&pt>1.4)s.tap()},draw(){pages[Math.min(i,pages.length-1)].draw(s.t)},
  tap(){if(pt<.6||i>=pages.length)return;i++;pt=0;if(i>=pages.length){cap('');go(next)}else{cap(pages[i].text,'tap to continue');Snd.play('tap')}}};return s}
@@ -259,7 +259,7 @@ function RunScene(){const S={name:'run',y:0,vy:0,on:true,off:0,obs:[],lambs:[],f
  init(){Snd.music('run');this.upd();cap('Tap to jump! Hold for a BIG jump. Gather 5 lost lambs! 🐑')},
  upd(){hud("Shepherd's Watch",'Lambs '+this.flock.length+' / 5')},
  down(){if(this.done)return;if(this.on){this.vy=-150;this.on=false;Snd.play('jump');cap('')}this.hold=true},up(){this.hold=false;if(this.vy<-60)this.vy=-60},
- update(dt){if(this.fin){this.fin+=dt;this.dx+=40*dt;this.flock.forEach((l,i)=>l.wp+=dt*12);if(this.fin>2.6&&!this.done){this.done=1;levelDone(0,this.bumps===0?3:this.bumps<=2?2:1)}return}
+ update(dt){if(this.fin){this.fin+=dt;this.dx+=40*dt;this.flock.forEach((l,i)=>l.wp+=dt*12);if(this.fin>2.6&&!this.done){this.done=1;levelDone(0,this.bumps===0?3:this.bumps<=2?2:1,800)}return}
   const sp=this.spd*(this.stum>0?.45:1);this.stum=Math.max(0,this.stum-dt);this.off+=sp*dt;
   this.vy+=(this.hold&&this.vy<0?260:480)*dt;this.y+=this.vy*dt;if(this.y>=0){this.y=0;this.vy=0;if(!this.on)Snd.play('thud');this.on=true}
   this.next-=sp*dt;if(this.next<0&&this.flock.length<5){this.next=rnd(110,170);const tp=Math.random()<.5?'rock':'bush';this.obs.push({x:G.W+20,tp,w:tp==='rock'?12:16,h:tp==='rock'?9:11})}
@@ -340,7 +340,7 @@ function SlingScene(){const S={name:'sling',pw:0,dir:1,hold:false,tries:0,shot:n
   const s=this.shot;if(s){s.t+=dt*1.6;const hx=this.gxPos()-2,hy=152-120*.86;const tx=s.res==='hit'?hx:s.res==='short'?lerp(60,hx-20,s.p/.66):hx+40,ty=s.res==='hit'?hy:s.res==='short'?146:hy-40;
    s.x=lerp(50,tx,s.t);s.y=lerp(104,ty,s.t)-Math.sin(s.t*Math.PI)*(s.res==='short'?30:22);
    if(s.t>=1){this.shot=null;if(s.res==='hit'){this.state='win';this.fallT=0;G.shake=6;Snd.play('thud');Snd.play('fanfare');fx(hx,hy,24,{k:'star',sp:80,up:20});cap('BONK! The giant fell down! 🎉');this.upd();
-     setTimeout(()=>levelDone(3,this.tries===1?3:this.tries<=3?2:1),1600)}else{Snd.play('bad');cap(s.res==='short'?'Too soft! Hold a little longer.':'Too hard! Let go a little sooner.')}}}
+     setTimeout(()=>levelDone(3,this.tries===1?3:this.tries<=3?2:1,1000),2000)}else{Snd.play('bad');cap(s.res==='short'?'Too soft! Hold a little longer.':'Too hard! Let go a little sooner.')}}}
   if(this.state==='win')this.fallT+=dt},
  auto(){const [a,b]=this.zone();if(this.state!=='aim'||this.shot)return;if(!this.hold){if(this.t>1.2)this.down()}else if(this.pw>a+.05&&this.pw<b-.05&&this.dir>0)this.up()},
  draw(){const win=this.state==='win';D.bg('bg_valley',null,{dy:.25});if(!win){X.save();X.globalCompositeOperation='multiply';D.tint('#c08a60',.25);X.restore()}
