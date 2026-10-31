@@ -40,7 +40,8 @@ html,body{margin:0;height:100%;position:fixed;inset:0;overscroll-behavior:none;-
 #card .stars i.off{color:#cbbfa8;text-shadow:none}
 #card .v{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:17px;line-height:1.35;margin:6px 0 2px;color:#2b1a10}
 #card .ref{font-weight:bold;color:#7a4a12;font-size:15px;margin-bottom:10px}
-#card .kjv{font-size:11px;color:#8a7a62;letter-spacing:1px}
+#card .ver{font-size:11px;color:#8a7a62;letter-spacing:1px}
+#card .credit{font-size:9px;line-height:1.25;color:#8a7a62;margin:8px auto 0;max-width:440px}
 #card .row{display:flex;gap:12px;justify-content:center}
 #card .btn{position:static}
 #fade{position:fixed;inset:0;background:#000;opacity:1;z-index:8;pointer-events:auto;transition:opacity .5s ease}
@@ -197,12 +198,15 @@ let fading=true;
 function fadeIn(){FADE.style.opacity='0';setTimeout(()=>{fading=false;FADE.style.pointerEvents='none'},500)}
 function go(S,arg){if(fading&&G.scene)return;fading=true;FADE.style.pointerEvents='auto';FADE.style.opacity='1';hideCard();
  setTimeout(()=>{try{clearUI();G.fx=[];G.keys={};G.ptr.down=false;G.scene=S(arg);G.scene.t=0;G.scene.init&&G.scene.init()}catch(e){window.__showErr&&__showErr(e.message);console.error(e)}fadeIn()},G.scene?500:50)}
-// level-complete card with KJV verse
+// level-complete card with NIrV verse
+const NIRV_NOTICE='Scripture quotations taken from The Holy Bible, New International Reader\'s Version®, NIrV® Copyright © 1995, 1996, 1998, 2014 by Biblica, Inc.® Used by permission. All rights reserved worldwide.';
 function stars(n){let s='';for(let i=0;i<3;i++)s+='<i class="'+(i<n?'':'off')+'" style="animation-delay:'+(.25+i*.18)+'s">★</i>';return s}
 function card(o){const inn=CARD.querySelector('.in');inn.innerHTML=(o.title?'<h2>'+o.title+'</h2>':'')+(o.stars!=null?'<div class="stars">'+stars(o.stars)+'</div>':'')+(o.sub?'<div style="font-weight:bold;font-size:14px;color:#5a4a3a">'+o.sub+'</div>':'')+
- '<div class="v">“'+o.verse+'”</div><div class="ref">'+o.ref+' <span class="kjv">KJV</span></div><div class="row"></div>';
+ '<div class="v">“'+o.verse+'”</div><div class="ref">'+o.ref+' <span class="ver">(NIrV)</span></div><div class="row"></div>'+(o.credit?'<div class="credit">'+o.credit+'</div>':'');
  const row=inn.querySelector('.row');(o.btns||[]).forEach((b,i)=>{const e=btn(b.label,b.cls||'green',{},()=>{if(fading)return;b.fn()});row.appendChild(e)});
- cap('');CARD.classList.add('on');G.paused=true;Snd.play(o.sfx||'win');if(G.auto&&o.btns&&o.btns.length){const b=o.btns[o.btns.length-1];setTimeout(()=>{if(CARD.classList.contains('on'))b.fn()},1500)}}
+ cap('');CARD.classList.add('on');fitCard(inn);G.paused=true;Snd.play(o.sfx||'win');if(G.auto&&o.btns&&o.btns.length){const b=o.btns[o.btns.length-1];setTimeout(()=>{if(CARD.classList.contains('on'))b.fn()},1500)}}
+function fitCard(inn){const v=inn.querySelector('.v');if(!v)return;let f=parseFloat(getComputedStyle(v).fontSize);v.style.fontSize='';f=parseFloat(getComputedStyle(v).fontSize);while(inn.scrollHeight>inn.clientHeight+1&&f>10.5){f-=.5;v.style.fontSize=f+'px';v.style.lineHeight='1.28'}}
+addEventListener('resize',()=>{if(CARD.classList.contains('on'))fitCard(CARD.querySelector('.in'))});
 function hideCard(){CARD.classList.remove('on');G.paused=false}
 function levelDone(i,starsN,dl){const L=LEVELS[i];const best=+(store.get(GAME_ID+'S'+i)||0);if(starsN>best)store.set(GAME_ID+'S'+i,starsN);
  const un=+(store.get(GAME_ID+'Unl')||0);if(i+1>un)store.set(GAME_ID+'Unl',i+1);
@@ -395,7 +399,7 @@ function FinaleScene(){const S={name:'finale',men:[],
  upd(){hud('Victory!','Cheering '+this.men.filter(m=>m.on).length+' / '+this.men.length)},
  tap(x,y){const m=this.men.find(m=>!m.on&&Math.abs(m.x-x)<16&&y>m.y-40&&y<m.y+6);if(!m)return;m.on=1;Snd.play('coin');fx(m.x,m.y-20,12,{k:'star',up:30});this.upd();
   if(this.men.every(m=>m.on)&&!this.done){this.done=1;Snd.play('win');fx(G.W/2,60,50,{k:'star',sp:100,up:20,c:'#ffd34d'});
-   setTimeout(()=>card({title:'The battle is the LORD’s! 🎉',sub:'You finished David & the Giant!',verse:'And all this assembly shall know that the LORD saveth not with sword and spear: for the battle is the LORD’s, and he will give you into our hands.',ref:'1 Samuel 17:47',btns:[{label:'🏠 Home',cls:'cream',fn:()=>go(TitleScene)},{label:'↻ Play Again',cls:'green',fn:()=>go(LEVELS[0].intro)}],sfx:'fanfare'}),1500)}},
+   setTimeout(()=>card({title:'The battle is the LORD’s! 🎉',sub:'You finished David & the Giant!',verse:'The Lord doesn’t rescue people by using a sword or a spear. And everyone here will know it. The battle belongs to the Lord. He will hand all of you over to us.',ref:'1 Samuel 17:47',btns:[{label:'🏠 Home',cls:'cream',fn:()=>go(TitleScene)},{label:'↻ Play Again',cls:'green',fn:()=>go(LEVELS[0].intro)}],credit:NIRV_NOTICE,sfx:'fanfare'}),1500)}},
  auto(dt){this.ac=(this.ac||0)+dt;if(this.ac<.5)return;this.ac=0;const m=this.men.find(m=>!m.on);if(m)this.tap(m.x,m.y-18)},
  draw(){const k=this.men.filter(m=>m.on).length/this.men.length;D.bg('bg_valley',null,{dy:.25});X.save();X.globalCompositeOperation='multiply';D.tint('#8a8a9a',(1-k)*.45);X.restore();
   X.save();X.globalCompositeOperation='lighter';const g=X.createRadialGradient(G.W/2,60,0,G.W/2,60,120);g.addColorStop(0,'rgba(255,230,150,'+(k*.45)+')');g.addColorStop(1,'rgba(255,230,150,0)');X.fillStyle=g;X.fillRect(0,0,G.W,G.H);X.restore();
@@ -406,18 +410,18 @@ function FinaleScene(){const S={name:'finale',men:[],
  }};return S}
 const pg=(text,drawFn)=>({text,draw:drawFn});
 const LEVELS=[
- {name:"Shepherd's Watch",scene:RunScene,ref:'1 Samuel 17:15',done:'The flock is safe!',verse:'But David went and returned from Saul to feed his father\u2019s sheep at Bethlehem.',
+ {name:"Shepherd's Watch",scene:RunScene,ref:'1 Samuel 17:15',done:'The flock is safe!',verse:'But David went back and forth from Saul’s camp to Bethlehem. He went to Bethlehem to take care of his father’s sheep.',
   intro:()=>Story([pg('David was a shepherd boy in Bethlehem. He took good care of his sheep.',t=>{hillsBG(t,null);davidSpr(G.W/2-50,170,90);for(let i=0;i<3;i++)drawSheep(G.W/2+20+i*30,166+(i%2)*8,1.4,t*4+i,-1);D.vig(.3)}),
    pg('Oh no! Some lambs wandered away. Let’s find them!',t=>{hillsBG(t,null);davidSpr(G.W/2-60,170,90,{rot:Math.sin(t*4)*.03});drawSheep(G.W-50+Math.sin(t*3)*8,150,1.1,t*8,1);D.vig(.3)})],RunScene)},
- {name:'Supplies to Camp',scene:CarryScene,ref:'1 Samuel 17:20',done:'Delivered!',verse:'And David rose up early in the morning, and left the sheep with a keeper, and took, and went, as Jesse had commanded him;',
+ {name:'Supplies to Camp',scene:CarryScene,ref:'1 Samuel 17:20',done:'Delivered!',verse:'Early in the morning David left his father’s flock in the care of a shepherd. David loaded up the food and started out, just as Jesse had directed. David reached the camp as the army was going out to its battle positions. The soldiers were shouting the war cry.',
   intro:()=>Story([pg('David’s father Jesse said: “Take this bread and cheese to your brothers at the army camp.”',t=>{hillsBG(t,null,true,'bg_road');davidSpr(G.W/2-40,170,88);['bread','cheese','bread'].forEach((f,i)=>D.spr(f,G.W/2+30+i*28,166-Math.abs(Math.sin(t*3+i))*4,18));D.vig(.3)})],CarryScene)},
- {name:'Five Smooth Stones',scene:StonesScene,ref:'1 Samuel 17:40',done:'Ready!',verse:'And he took his staff in his hand, and chose him five smooth stones out of the brook, and put them in a shepherd\u2019s bag which he had, even in a scrip; and his sling was in his hand: and he drew near to the Philistine.',
+ {name:'Five Smooth Stones',scene:StonesScene,ref:'1 Samuel 17:40',done:'Ready!',verse:'Then David picked up his wooden staff. He went down to a stream and chose five smooth stones. He put them in the pocket of his shepherd’s bag. Then he took his sling in his hand and approached Goliath.',
   intro:()=>Story([pg('A giant named Goliath scared everyone. But David said: “God will help me!”',t=>{D.bg('bg_valley',null,{dy:.25});goliath(G.W-80,174,{h:150});davidSpr(70,174,70);D.vig(.4)}),
    pg('So David went down to the brook to find stones for his sling.',t=>{D.bg('bg_brook');davidSpr(G.W/2,176,80,{run:1,ph:t*8});D.vig(.3)})],StonesScene)},
- {name:'Save the Lamb',scene:LambScene,ref:'1 Samuel 17:34-35',done:'The lamb is safe!',verse:'And David said unto Saul, Thy servant kept his father\u2019s sheep, and there came a lion, and a bear, and took a lamb out of the flock: And I went out after him, and smote him, and delivered it out of his mouth: and when he arose against me, I caught him by his beard, and smote him, and slew him.',
+ {name:'Save the Lamb',scene:LambScene,ref:'1 Samuel 17:34-35',done:'The lamb is safe!',verse:'But David said to Saul, “I’ve been taking care of my father’s sheep. Sometimes a lion or a bear would come and carry off a sheep from the flock. Then I would go after it and hit it. I would save the sheep it was carrying in its mouth. If it turned around to attack me, I would grab its hair. I would strike it down and kill it.”',
   intro:()=>Story([pg('David told King Saul: “I can fight the giant! God helped me before, when a lion took a lamb.”',t=>{D.bg('bg_tellsaul',null,{dy:.4,zoom:1+t*.008});D.vig(.3)}),
    pg('The lion ran off with a little lamb! David ran after it to save the lamb. Help him catch up!',t=>{hillsBG(t,t*40);D.softShadow(G.W*.68,168,24,.35);D.spr('lioncarry',G.W*.68,168-Math.abs(Math.sin(t*9))*2,62,{});davidSpr(G.W*.3,168,70,{run:1,ph:t*11});D.vig(.3)})],LambScene)},
- {name:'The Sling',scene:SlingScene,ref:'1 Samuel 17:45',done:'David won!',verse:'Then said David to the Philistine, Thou comest to me with a sword, and with a spear, and with a shield: but I come to thee in the name of the LORD of hosts, the God of the armies of Israel, whom thou hast defied.',
+ {name:'The Sling',scene:SlingScene,ref:'1 Samuel 17:45',done:'David won!',verse:'David said to Goliath, “You are coming to fight against me with a sword, a spear and a javelin. But I’m coming against you in the name of the Lord who rules over all. He is the God of the armies of Israel. He’s the one you have dared to fight against.”',
   intro:()=>Story([pg('David ran toward the giant, trusting God.',t=>{D.bg('bg_valley',null,{dy:.25,zoom:1+t*.01});goliath(G.W-70,164,{h:130});davidSpr(40+(t*30)%60,164,52,{run:1,ph:t*12});D.vig(.4)})],SlingScene)}
 ];
 const TitleScene=makeTitle({title:'David &amp; the Giant',tag:'Watch • Carry • Choose • Trust',top:'5%',play:'44%',draw(t){D.bg('bg_title',null,{zoom:1+.02*Math.sin(t*.4),dy:.15});
